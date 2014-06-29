@@ -1,13 +1,19 @@
-# Don’t commit the following directories created by pub.
-build/
+# files and directories created by pub, Dart Editor, and dart2js
 packages/
-
-# Or the files created by dart2js.
-*.dart.js
-*.dart.precompiled.js
+*.project
+*.buildlog
 *.js_
 *.js.deps
 *.js.map
+*.lock
 
-# Include when developing application packages.
-pubspec.lock
+# files and directories dropped by other development environments
+.project      // Eclipse
+*.iml         // IntelliJ
+*.ipr         // IntelliJ
+*.iws         // IntelliJ
+.idea/        // IntelliJ
+.DS_Store     // Mac
+
+# generated JavaScript files
+*.dart.js
