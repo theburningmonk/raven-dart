@@ -9,6 +9,7 @@ import 'src/utils.dart';
 import 'package:http/http.dart' as http;
 
 part 'src/httpRequester.dart';
+part 'src/scrubber.dart';
 
 /**
  * Client for [Sentry](https://www.getsentry.com).
@@ -19,10 +20,12 @@ class RavenClient {
   final Dsn  _dsn;
   final bool isEnabled;
   Map<String, String> _defaultTags;
+  List<Scrubber> _scrubbers;
 
-  RavenClient(String dsn, [ Map<String, String> this._defaultTags ]) :
+  RavenClient(String dsn, { Map<String, String> tags }) :
     this._dsn         = dsn.isNotEmpty ? Dsn.Parse(dsn) : null,
-    this.isEnabled    = dsn.isNotEmpty;
+    this.isEnabled    = dsn.isNotEmpty,
+    this._defaultTags = tags;
 
   void captureException(exn,
                         StackTrace stackTrace,
