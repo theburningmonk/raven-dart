@@ -5,18 +5,18 @@ import 'package:raven_dart/raven_dart.dart';
 
 class CreditCardScrubberTests {
   Scrubber scrubber = new CreditCardScrubber();
-  
+
   void start() {
     group('credit_card_scrubber', () {
-      _testValidCreditCardNumberIsScrubbed();
+      _testCreditCardNumberIsScrubbed();
     });
   }
 
-  void _testValidCreditCardNumberIsScrubbed() {
-    test('valid credit card number is scrubbed', () {
+  void _testCreditCardNumberIsScrubbed() {
+    test('credit card number is scrubbed', () {
       var ccNumber = "1234-5678-9101-1121";
       var input    = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ${ccNumber} Praesent est dui";
-      
+
       var output = scrubber.scrub(input);
       expect(output.contains(ccNumber), equals(false), reason : 'credit card number should have been replaced');
     });
