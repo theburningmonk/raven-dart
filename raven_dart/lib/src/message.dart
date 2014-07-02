@@ -5,8 +5,16 @@ import 'dart:io';
 import 'constants.dart';
 import 'enums.dart';
 import 'utils.dart';
-import 'package:dart_ext/collection_ext.dart' as CollectionExt;
 import 'package:uuid/uuid_server.dart';
+
+class Tag {
+  String key;
+  String value;
+
+  Tag(this.key, this.value);
+
+  String toJson() => '[ "${this.key}", "${this.value}" ]';
+}
 
 /**
  * Represents an exception stack frame for Sentry
@@ -122,7 +130,7 @@ class SentryMessage extends Object {
   final Map modules;
 
   /// A map of tags for this event.
-  final Map tags;
+  final List<Tag> tags;
 
   /// An arbitrary mapping of additional metadata to store with the event.
   final Map extra;
@@ -130,12 +138,12 @@ class SentryMessage extends Object {
   /// For the built-in [sentry.interfaces.Exception](http://sentry.readthedocs.org/en/latest/developer/interfaces/index.html) interface
   final SentryException exception;
 
-  static Map _defaultTags =
-    {
-      'dart_runtime_version' : Platform.version,
-      'os'                   : Platform.operatingSystem,
-      'number_of_processors' : Platform.numberOfProcessors
-    };
+  static List<Tag> _defaultTags =
+    [
+      new Tag('dart_runtime_version', Platform.version.replaceAll('"', "'")),
+      new Tag('os', Platform.operatingSystem),
+      new Tag('number_of_processors', Platform.numberOfProcessors.toString())
+    ];
 
   /**
    * Create a new message that encapsulates all the fields to be sent as part of the event to Sentry.
@@ -149,7 +157,7 @@ class SentryMessage extends Object {
                   this.platform : 'dart',          // NOTE: default platform is 'dart'
                   this.culprit,
                   modules,
-                  Map tags,
+                  List<Tag> tags,
                   Map extra,
                   exception,
                   StackTrace stackTrace}) :
@@ -157,7 +165,7 @@ class SentryMessage extends Object {
     this.message    = truncate(message, Constants.MAX_MESSAGE_LENGTH),
     this.timestamp  = new DateTime.now(),
     this.serverName = Platform.localHostname,
-    this.tags       = CollectionExt.merge(_defaultTags, tags),
+    this.tags       = concatList(_defaultTags, tags),
     this.extra      = defaultArg(extra, {}),
     this.modules    = defaultArg(modules, {}),
     this.exception  = mapOrDefault(exception, (exn) => new SentryException._fromException(exn, stackTrace.toString()));
@@ -171,7 +179,7 @@ class SentryMessage extends Object {
   "logger"      : "${this.logger}",
   "platform"    : "${this.platform}",
   "culprit"     : "${this.culprit}",
-  "tags"        : ${JSON.encode(this.tags)},
+  "tags"        : [${this.tags.map((tag) => tag.toJson()).join(',')}],
   "extra"       : ${JSON.encode(this.extra)},
   "server_name" : "${this.serverName}",
   "modules"     : ${JSON.encode(this.modules)},

@@ -23,12 +23,12 @@ class RavenClientTests {
   }
 
   void _testCaptureException() {
-    var client = new RavenClient(dsn);
+    var client = new RavenClient(dsn, { 'label1' : 'test', 'label2' : 'also test' });
     try
     {
       throw new Exception("test exception");
     } catch (exn, st) {
-      client.captureException(exn, st);
+      client.captureException(exn, st, tags : { 'label1' : 'another test', 'label2' : 'yet another test' });
     }
 
     // need this just to make the unittest framework wait for the above to complete
