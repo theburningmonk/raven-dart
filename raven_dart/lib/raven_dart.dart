@@ -19,13 +19,18 @@ class RavenClient {
 
   final Dsn  _dsn;
   final bool isEnabled;
-  Map<String, String> _defaultTags;
-  List<Scrubber> _scrubbers;
+  final Map<String, String> _defaultTags;
+  final List<Scrubber> _scrubbers;
 
-  RavenClient(String dsn, { Map<String, String> tags }) :
+  RavenClient(String dsn, { Map<String, String> tags, List<Scrubber> scrubbers }) :
     this._dsn         = dsn.isNotEmpty ? Dsn.Parse(dsn) : null,
     this.isEnabled    = dsn.isNotEmpty,
-    this._defaultTags = tags;
+    this._defaultTags = defaultArg(tags, {}),
+    this._scrubbers   = defaultArg(scrubbers,
+                                   [ new CreditCardScrubber(),
+                                     new SentryKeyScrubber(),
+                                     new SentrySecretScrubber(),
+                                     new PasswordScrubber() ]);
 
   void captureException(exn,
                         StackTrace stackTrace,
@@ -42,7 +47,7 @@ class RavenClient {
                                       extra      : extra,
                                       exception  : exn,
                                       stackTrace : stackTrace);
-    _sendMessage(_dsn, sentryMsg);
+    _sendMessage(_dsn, sentryMsg, _scrubbers);
   }
 
   void captureMessage(String message,
@@ -56,6 +61,6 @@ class RavenClient {
                                       logLevel : logLevel,
                                       tags     : convertMapsToTags([ _defaultTags, tags ]),
                                       extra    : extra);
-    _sendMessage(_dsn, sentryMsg);
+    _sendMessage(_dsn, sentryMsg, _scrubbers);
   }
 }

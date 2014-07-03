@@ -6,7 +6,7 @@ part of raven_dart;
  * See [here](http://sentry.readthedocs.org/en/latest/developer/client/index.html#authentication) for
  * information about the authentication.
  */
-void _sendMessage(Dsn dsn, SentryMessage message) {
+void _sendMessage(Dsn dsn, SentryMessage message, List<Scrubber> scrubbers) {
   var url = '${dsn.protocol}://${dsn.host + dsn.path}api/${dsn.projectId}/store/';
   var userAgent  = 'raven_dart/${Constants.CLIENT_VERSION}';
   var authHeader = 'Sentry sentry_version=5,'
@@ -14,7 +14,7 @@ void _sendMessage(Dsn dsn, SentryMessage message) {
         + 'sentry_timestamp=${new DateTime.now().millisecondsSinceEpoch ~/ 1000},'
         + 'sentry_key=${dsn.publicKey},'
         + 'sentry_secret=${dsn.secretKey}';
-  var body = message.toJson();
+  var body = scrubbers.fold(message.toJson(), (input, scrubber) => scrubber.scrub(input));
 
   runZoned(() =>
     http.post(url,

@@ -23,7 +23,7 @@ class RavenClientTests {
   }
 
   void _testCaptureException() {
-    var client = new RavenClient(dsn, { 'label1' : 'test', 'label2' : 'also test' });
+    var client = new RavenClient(dsn, tags: { 'label1' : 'test', 'label2' : 'also test', 'password' : 'live long and prosper' });
     try
     {
       throw new Exception("test exception");
