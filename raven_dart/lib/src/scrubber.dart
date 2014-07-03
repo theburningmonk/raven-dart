@@ -42,3 +42,12 @@ class SentrySecretScrubber extends RegexScrubber {
 
   replace(Match m) => "${m.group(1)}####-SENTRY-SECRET-SCRUBBED-####";
 }
+
+/**
+ * Scrubber to remove password key-value pairs from the input string
+ */
+class PasswordScrubber extends RegexScrubber {
+  PasswordScrubber() : super(r'"(password|passwd|pwd|secret)"([ ]*[:][ ]*)"(.+)"');
+
+  replace(Match m) => '"${m.group(1)}"${m.group(2)}"####-PASSWORD-SCRUBBED-####"';
+}

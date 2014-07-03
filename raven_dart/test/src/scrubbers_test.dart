@@ -90,3 +90,37 @@ class SentrySecretScrubberTests {
     doTest(' - ');
   }
 }
+
+class PasswordScrubberTests {
+  Scrubber scrubber = new PasswordScrubber();
+
+  void start() {
+    group('password_scrubber', () {
+      _testPasswordIsScrubbed();
+    });
+  }
+
+  void _testPasswordIsScrubbed() {
+    doTest (key) {
+      test('${key} is scrubbed', () {
+        var input = '{ "${key}" : "live long and prosper" }';
+
+        var output = scrubber.scrub(input);
+        expect(output.contains("live long and prosper"), equals(false), reason : '${key} should have been replaced');
+        expect(output, equals('{ "${key}" : "####-PASSWORD-SCRUBBED-####" }'));
+      });
+    }
+
+    doTest("password");
+    doTest("PasSwoRd");
+    doTest("PASSWORD");
+    doTest("pwd");
+    doTest("PWD");
+    doTest("passwd");
+    doTest("pAssWd");
+    doTest("PASSWD");
+    doTest("secret");
+    doTest("sEcREt");
+    doTest("SECRET");
+  }
+}

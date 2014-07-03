@@ -15,4 +15,5 @@ main() {
   new CreditCardScrubberTests().start();
   new SentryKeyScrubberTests().start();
   new SentrySecretScrubberTests().start();
+  new PasswordScrubberTests().start();
 }
