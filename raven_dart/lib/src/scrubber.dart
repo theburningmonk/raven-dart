@@ -1,4 +1,4 @@
-part of raven_dart;
+library raven_dart.scrubber;
 
 abstract class Scrubber {
   String scrub(String input);

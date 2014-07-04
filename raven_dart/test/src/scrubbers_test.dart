@@ -1,5 +1,5 @@
 import 'package:unittest/unittest.dart';
-import 'package:raven_dart/raven_dart.dart';
+import 'package:raven_dart/src/scrubber.dart';
 
 class CreditCardScrubberTests {
   Scrubber scrubber = new CreditCardScrubber();

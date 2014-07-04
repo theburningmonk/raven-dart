@@ -20,3 +20,23 @@ class LogLevel extends _Enum<String> {
 
   toJson() => this.value;
 }
+
+class Status extends _Enum<int> {
+  const Status._internal(int status) : super(status);
+
+  static const Status Enabled           = const Status._internal(1);
+  static const Status TemporaryDisabled = const Status._internal(2);
+  static const Status Disabled          = const Status._internal(3);
+
+  @override
+  String toString() {
+    switch (this.value) {
+      case 1:
+        return "Enabled";
+      case 2:
+        return "Temporarily Disabled";
+      case 3:
+        return "Disabled";
+    };
+  }
+}
