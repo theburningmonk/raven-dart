@@ -19,7 +19,11 @@ class RavenClient {
   HttpRequester _requester;
 
   // Note: since the isolates are doing mostly IO work, it makes sense to have more isolate than cores
-  RavenClient(String dsn, { Map<String, String> tags, List<Scrubber> scrubbers, int lvlOfConcurrencyPerCore : 3 }) :
+  RavenClient(String dsn,
+              { Map<String, String> tags,
+                List<Scrubber> scrubbers,
+                int lvlOfConcurrencyPerCore : 3,
+                int maxRetries : 3 }) :
     this._dsn         = dsn.isNotEmpty ? Dsn.Parse(dsn) : null,
     this._defaultTags = defaultArg(tags, {}),
     this._scrubbers   = defaultArg(scrubbers,
@@ -27,7 +31,9 @@ class RavenClient {
                                      new SentryKeyScrubber(),
                                      new SentrySecretScrubber(),
                                      new PasswordScrubber() ]) {
-      _requester = new HttpRequester(_dsn, _scrubbers, lvlOfConcurrencyPerCore);
+      _requester = new HttpRequester(_dsn, _scrubbers,
+                                     lvlOfConcurrencyPerCore : lvlOfConcurrencyPerCore,
+                                     maxRetries              : maxRetries);
     }
 
   void captureException(exn,

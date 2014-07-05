@@ -3,6 +3,7 @@ library raven_dart.http;
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:math';
 
 import 'package:http/http.dart' as http;
 
@@ -25,25 +26,28 @@ class HttpRequester {
   final String _url, _userAgent;
   final List<Scrubber> _scrubbers;
   final List<ReceivePort> _isolates = new List();
+  final int _lvlOfConcurrencyPerCore, _maxRetries;
   List<SendPort> _handlers;
 
   Status _status;
   Timer _reenableTimer;
 
-  HttpRequester(Dsn dsn, List<Scrubber> scrubbers, [int lvlOfConcurrencyPerCore]) :
-    this._dsn       = dsn,
-    this._url       = mapOrDefault(dsn, (dsn) => '${dsn.protocol}://${dsn.host + dsn.path}api/${dsn.projectId}/store/'),
-    this._userAgent = 'raven_dart/${Constants.CLIENT_VERSION}',
-    this._scrubbers = scrubbers {
+  HttpRequester(Dsn dsn, List<Scrubber> scrubbers, { int lvlOfConcurrencyPerCore, int maxRetries }) :
+    this._dsn        = dsn,
+    this._url        = mapOrDefault(dsn, (dsn) => '${dsn.protocol}://${dsn.host + dsn.path}api/${dsn.projectId}/store/'),
+    this._userAgent  = 'raven_dart/${Constants.CLIENT_VERSION}',
+    this._scrubbers  = scrubbers,
+    this._maxRetries = defaultArg(maxRetries, 3),
+    this._lvlOfConcurrencyPerCore = defaultArg(lvlOfConcurrencyPerCore, 3) {
       _status        = dsn == null ? Status.Disabled : Status.Enabled;
       _reenableTimer = new Timer.periodic(new Duration(minutes : 1), _reenable);
       _handlers      = new Iterable
-                            .generate(defaultArg(lvlOfConcurrencyPerCore, 3) * Platform.numberOfProcessors, _initReceivePort)
+                            .generate(this._lvlOfConcurrencyPerCore * Platform.numberOfProcessors, _initReceivePort)
                             .toList();
     }
 
   void sendMessage(SentryMessage message) {
-    _handlers[_index].send(_getBody(message));
+    _handlers[_index].send({ 'body' : _getBody(message), 'retries' : 0 });
     _index = (_index + 1) % _handlers.length;
   }
 
@@ -66,8 +70,17 @@ class HttpRequester {
 
   String _getBody(SentryMessage message) => _scrubbers.fold(message.toJson(), (input, scrubber) => scrubber.scrub(input));
 
-  void _fallback(String body) {
-    print("Fallback from Sentry request:\n${body}");
+  void _fallback(String body) => print("Fallback from Sentry request:\n${body}");
+
+  void _retry(String body, int retries, SendPort port) {
+    if (retries >= this._maxRetries) {
+      return;
+    }
+
+    var wait = new Duration(milliseconds : 100 * (pow(2, retries)));
+    new Timer(wait, () {
+      port.send({ 'body' : body, 'retries' : retries + 1 }); // resend the message to be retried
+    });
   }
 
   SendPort _initReceivePort(_) {
@@ -76,7 +89,9 @@ class HttpRequester {
 
     SendPort sendPort = port.sendPort;
 
-    port.listen((String body) {
+    port.listen((Map args) {
+        String body = args['body'];
+
         if (_status != Status.Enabled) {
           _fallback(body);
           return;
@@ -108,7 +123,7 @@ class HttpRequester {
                       break;
                     default:
                       print("Request to Sentry failed with ${response.statusCode} [${response.body}], retrying...");
-                      sendPort.send(body); // resend the message to be retried
+                      _retry(body, args['retries'], sendPort);
                       break;
                   }
                 }),

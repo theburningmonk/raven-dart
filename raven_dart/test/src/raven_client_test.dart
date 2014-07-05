@@ -16,20 +16,18 @@ class RavenClientTests {
     });
   }
 
-  void _testCaptureMessage() {
+  void _testCaptureMessage() =>
     test('captureMessage should send an info event', () {
       var client = new RavenClient(dsn);
       client.captureMessage("test");
 
       // give the client some time to make the HTTP call
-      Future future = new Future
-                            .delayed(new Duration(milliseconds : 10))
-                            .then((_) => client.close());
-      expect(future, completes);
+      return new Future
+        .delayed(new Duration(milliseconds : 100))
+        .then((_) => client.close());
     });
-  }
 
-  void _testCaptureException() {
+  void _testCaptureException() =>
     test('captureException should send an error event', () {
       var client = new RavenClient(dsn, tags: { 'label1' : 'test', 'label2' : 'also test', 'password' : 'live long and prosper' });
       try
@@ -40,10 +38,8 @@ class RavenClientTests {
       }
 
       // give the client some time to make the HTTP call
-      Future future = new Future
-                            .delayed(new Duration(milliseconds : 10))
-                            .then((_) => client.close());
-      expect(future, completes);
+      return new Future
+        .delayed(new Duration(milliseconds : 100))
+        .then((_) => client.close());
     });
-  }
 }
