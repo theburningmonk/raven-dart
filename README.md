@@ -4,7 +4,7 @@
 import 'package:raven_dart/raven_dart.dart';
 
 main() {
-  var dsn    = 'https://b70a31b3510c4cf793964a185cfe1fd0:b7d80b520139450f903720eb7991bf3d@example.com/1';
+  var dsn = 'https://b70a31b3510c4cf793964a185cfe1fd0:b7d80b520139450f903720eb7991bf3d@example.com/1';
 
   // initialize the client with your DSN
   var client = new RavenClient(dsn);
