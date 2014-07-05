@@ -1,10 +1,10 @@
 name: raven_dart
-version: 0.1.0
-author: Yan Cui
+version: 0.1.1
+author: Yan Cui <theburningmonk@gmail.com>
 description: Dart client for Sentry (https://www.getsentry.com)
 homepage: https://github.com/theburningmonk/raven-dart
 dependencies:
-  http: any
-  uuid: any
+  http: '>=0.11.1+1 <0.12.0'
+  uuid: '>=0.3.2 <0.4.0'
 dev_dependencies:
   unittest: any

@@ -76,7 +76,7 @@ class RavenClient {
    *        try {
    *          throw new Exception("test exception");
    *        } catch (exn, stackTrace) {
-   *          client.captureException(exn, st);
+   *          client.captureException(exn, stacktrace);
    *        }
    *      }
    *
