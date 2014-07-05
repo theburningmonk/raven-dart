@@ -23,7 +23,7 @@ main() {
 
 # Resources #
 
-- Download
+- [Download](https://pub.dartlang.org/packages/raven_dart)
 - API doc (coming soon)
 - [Bug Tracker](https://github.com/theburningmonk/raven-dart/issues)
 - Follow [@theburningmonk](https://twitter.com/theburningmonk) on Twitter for updates
