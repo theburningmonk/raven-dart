@@ -1,5 +1,5 @@
 name: raven_dart
-version: 0.1.1
+version: 0.2.0
 author: Yan Cui <theburningmonk@gmail.com>
 description: Dart client for Sentry (https://www.getsentry.com)
 homepage: https://github.com/theburningmonk/raven-dart
