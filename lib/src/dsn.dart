@@ -58,7 +58,7 @@ class Dsn {
     var projectId = pathSegments.last;
     var path = uri.path.substring(0, uri.path.length - projectId.length);
 
-    return new Dsn._internal(uri.scheme, uri.host, path, publicKey, secret, projectId);
+    return new Dsn._internal(uri.scheme, '${uri.host}:${uri.port}', path, publicKey, secret, projectId);
   }
 
   static _getProjectId(Uri uri) {

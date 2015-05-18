@@ -20,7 +20,7 @@ class DsnParserTests {
 
     test('test parsing valid URI', () {
       var dsn = Dsn.Parse(dsnStr);
-      expect(dsn.host,      equals('example.com'), reason : 'host should be "example.com"');
+      expect(dsn.host,      equals('example.com:443'), reason : 'host should be "example.com" with the port 443');
       expect(dsn.projectId, equals('12345'),       reason : 'project Id should be "12345"');
       expect(dsn.publicKey, equals('public'),      reason : 'public key should be "public"');
       expect(dsn.secretKey, equals('secret'),      reason : 'public key should be "secret"');
