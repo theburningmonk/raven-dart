@@ -13,7 +13,7 @@ class Tag {
 
   Tag(this.key, this.value);
 
-  String toJson() => '[ "${this.key}", "${this.value}" ]';
+  toJson() => [this.key, this.value];
 }
 
 /**
@@ -21,35 +21,36 @@ class Tag {
  */
 class SentryStackFrame {
   String _filename, _module, _function;
-  int _lineno, _colno;
+  int _lineno, _colno = 0;
 
   /**
    * Creates a stackframe object from a line from the stacktrace, e.g.
    *    #0      RavenClientTests._testCaptureException (file:///c:/raven-dart/src/raven_client.dart:28:7)
    */
   SentryStackFrame._fromFrame(String frame) {
-    var fileStartIdx = frame.indexOf('file:///');
+    var fileStartIdx = frame.indexOf(new RegExp(r'\((file)|(package)|(dart):'));
     if (fileStartIdx >= 0) {
       this._function = parseStackTraceToGetCurrentMethodName(frame);
-      this._filename = frame.substring(fileStartIdx+8, frame.lastIndexOf('.dart')+5);
+      this._filename = frame.substring(fileStartIdx, frame.lastIndexOf('.dart'));
       this._module   = this._filename.split('/').last;
       var lineInfo  = frame.substring(frame.lastIndexOf('.dart')+5, frame.lastIndexOf(')'));
       var linePos   = lineInfo.split(':').where(isNotNullOrEmpty).toList();
       this._lineno   = int.parse(linePos[0]);
-      this._colno    = int.parse(linePos[1]);
+      if (linePos.length > 1) {
+        this._colno    = int.parse(linePos[1]);
+      }
     }
   }
 
-  String _toJson() => '''
-{ 
-  "filename": "${this._filename}",
-  "lineno"  : ${this._lineno},
-  "colno"   : ${this._colno},
-  "function": "${this._function}",
-  "module"  : "${this._module}" 
-}''';
+  _toJson() => {
+    "filename": this._filename,
+    "lineno"  : this._lineno,
+    "colno"   : this._colno,
+    "function": this._function,
+    "module"  : this._module,
+  };
 
-  String toJson() => mapOrDefault(this._filename, (_) => _toJson());
+  toJson() => (this._filename == null) ? null : _toJson();
 }
 
 /**
@@ -64,8 +65,7 @@ class SentryStackTrace {
                     .map((frame) => new SentryStackFrame._fromFrame(frame))
                     .toList();
 
-  String toJson() =>
-    '{ "frames": [ ${this._frames.map((f) => f.toJson()).where(isNotNull).join(',')} ] }';
+  toJson() => {"frames": this._frames.map((f) => f.toJson()).where(isNotNull).toList() };
 }
 
 /**
@@ -81,13 +81,12 @@ class SentryException {
     this._module     = parseStackTraceToGetCurrentFileName(stackTrace),
     this._stackTrace = mapOrDefault(stackTrace, (st) => new SentryStackTrace._fromStackTrace(st));
 
-  String toJson() => '''
-{ 
-  "type"      : "${this._type}",
-  "value"     : "${this._value}",
-  "module"    : "${this._module}",
-  "stacktrace": ${this._stackTrace.toJson()} 
-}''';
+  toJson() => {
+    "type"      : this._type,
+    "value"     : this._value,
+    "module"    : this._module,
+    "stacktrace": this._stackTrace.toJson(),
+  };
 }
 
 /**
@@ -170,19 +169,18 @@ class SentryMessage extends Object {
     this.modules    = defaultArg(modules, {}),
     this.exception  = mapOrDefault(exception, (exn) => new SentryException._fromException(exn, stackTrace.toString()));
 
-  String toJson() => '''
-{ 
-  "event_id"    : "${this.eventId}",
-  "message"     : "${this.message}",
-  "timestamp"   : "${this.timestamp}",
-  "level"       : "${this.logLevel.toJson()}",
-  "logger"      : "${this.logger}",
-  "platform"    : "${this.platform}",
-  "culprit"     : "${this.culprit}",
-  "tags"        : [${this.tags.map((tag) => tag.toJson()).join(',')}],
-  "extra"       : ${JSON.encode(this.extra)},
-  "server_name" : "${this.serverName}",
-  "modules"     : ${JSON.encode(this.modules)},
-  "exception"   : [ ${mapOrDefault(this.exception, (exn) => exn.toJson(), "")}] 
-}''';
+  String toJson() => JSON.encode({
+    "event_id"    : this.eventId,
+    "message"     : this.message,
+    "timestamp"   : this.timestamp.millisecondsSinceEpoch,
+    "level"       : this.logLevel.toJson(),
+    "logger"      : this.logger,
+    "platform"    : this.platform,
+    "culprit"     : this.culprit,
+    "tags"        : this.tags.map((tag) => tag.toJson()).toList(),
+    "extra"       : this.extra,
+    "server_name" : this.serverName,
+    "modules"     : this.modules,
+    "exception"   : [(this.exception == null) ? '' : this.exception.toJson()],
+  });
 }
