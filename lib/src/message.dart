@@ -5,7 +5,7 @@ import 'dart:io';
 import 'constants.dart';
 import 'enums.dart';
 import 'utils.dart';
-import 'package:uuid/uuid_server.dart';
+import 'package:uuid/uuid.dart';
 
 class Tag {
   String key;
